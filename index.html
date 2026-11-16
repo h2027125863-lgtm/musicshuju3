@@ -1,0 +1,227 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+ content="width=device-width, initial-scale=1.0">
+
+<title>音乐播放按钮</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent !important;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 音乐按钮 */
+#musicBtn {
+  position: relative;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+
+  border: 1.5px solid rgba(155,189,203,.72);
+  background: rgba(29,51,67,.32);
+  color: #d9e8ef;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  cursor: pointer;
+
+  transition: all .25s ease;
+}
+
+#musicBtn:hover {
+  transform: scale(1.08);
+  background: rgba(50,80,99,.52);
+}
+
+#musicBtn svg {
+  width: 29px;
+  height: 29px;
+}
+
+/* 停止图标默认隐藏 */
+#stopIcon {
+  display: none;
+}
+
+/* 播放时高亮 */
+#musicBtn.playing {
+  border-color: #eabf85;
+  background: rgba(100,88,71,.36);
+  color: #f6dcc0;
+
+  box-shadow:
+    0 0 22px rgba(236,184,118,.21);
+}
+
+/* 播放时切换图标 */
+#musicBtn.playing #noteIcon {
+  display: none;
+}
+
+#musicBtn.playing #stopIcon {
+  display: block;
+}
+
+/* 播放时出现柔和光环 */
+#musicBtn.playing::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+
+  border: 1px solid rgba(234,191,133,.5);
+
+  pointer-events: none;
+  animation: pulse 2s ease-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: .8;
+    transform: scale(.95);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.43);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- GitHub 仓库中的音乐文件 -->
+<audio
+  id="bgm"
+  src="./music3.mp3"
+  preload="metadata"
+  loop>
+</audio>
+
+<button
+  id="musicBtn"
+  type="button"
+  aria-label="播放音乐"
+  aria-pressed="false">
+
+  <!-- 音乐图标 -->
+  <svg id="noteIcon"
+       viewBox="0 0 32 32"
+       fill="none"
+       aria-hidden="true">
+
+    <path
+      d="M12 8 L25 5 V22
+         M12 8 V25
+         M12 8 L25 5"
+      stroke="currentColor"
+      stroke-width="2.7"
+      stroke-linecap="round"
+      stroke-linejoin="round"/>
+
+    <ellipse cx="8" cy="25"
+      rx="4" ry="2.8"
+      fill="currentColor"/>
+
+    <ellipse cx="21" cy="22"
+      rx="4" ry="2.8"
+      fill="currentColor"/>
+  </svg>
+
+  <!-- 停止图标 -->
+  <svg id="stopIcon"
+       viewBox="0 0 32 32"
+       aria-hidden="true">
+
+    <rect x="9" y="9"
+      width="14"
+      height="14"
+      rx="2.5"
+      fill="currentColor"/>
+  </svg>
+</button>
+
+<script>
+const audio = document.getElementById("bgm");
+const btn = document.getElementById("musicBtn");
+
+// 无限循环
+audio.loop = true;
+
+// 音量
+audio.volume = 0.85;
+
+function updateButton(playing) {
+  btn.classList.toggle("playing", playing);
+
+  btn.setAttribute(
+    "aria-label",
+    playing ? "停止音乐" : "播放音乐"
+  );
+
+  btn.setAttribute(
+    "aria-pressed",
+    String(playing)
+  );
+}
+
+// 点击播放或停止
+btn.addEventListener("click", async () => {
+
+  if (!audio.paused) {
+
+    // 再次点击：停止音乐
+    audio.pause();
+    audio.currentTime = 0;
+
+    updateButton(false);
+
+  } else {
+
+    // 点击：开始播放
+    try {
+      audio.currentTime = 0;
+      await audio.play();
+
+      updateButton(true);
+    } catch (error) {
+      updateButton(false);
+      console.error("播放失败：", error);
+    }
+
+  }
+});
+
+// 同步按钮状态
+audio.addEventListener("playing", () => {
+  updateButton(true);
+});
+
+audio.addEventListener("pause", () => {
+  updateButton(false);
+});
+</script>
+
+</body>
+</html>
